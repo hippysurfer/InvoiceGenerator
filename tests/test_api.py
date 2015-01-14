@@ -21,7 +21,7 @@ class AddressTest(unittest.TestCase):
         address = self.addresss_object({key: uuid.uuid4()
                                         for key in self.attrs})
         for key in self.attrs:
-            self.assertIsInstance(address.__getattribute__(key), unicode)
+            self.assertIsInstance(address.__getattribute__(key), str)
 
     def test_get_address_lines(self):
         summary = 'Py s.r.o.'
@@ -31,7 +31,7 @@ class AddressTest(unittest.TestCase):
 
         address_object = self.addresss_object(summary, address, city, zip_code)
 
-        expected = [summary, address, u'%s %s' % (zip_code, city)]
+        expected = [summary, address, '%s %s' % (zip_code, city)]
         self.assertEquals(expected, address_object.get_address_lines())
 
     def test_get_contact_lines(self):
@@ -60,8 +60,8 @@ class CreatorTest(unittest.TestCase):
     def test_check_data_types(self):
         creator = Creator('John Doe', '/black/hole')
 
-        self.assertIsInstance(creator.name, unicode)
-        self.assertIsInstance(creator.stamp_filename, unicode)
+        self.assertIsInstance(creator.name, str)
+        self.assertIsInstance(creator.stamp_filename, str)
 
 
 class ItemTest(unittest.TestCase):
@@ -75,8 +75,8 @@ class ItemTest(unittest.TestCase):
 
         self.assertIsInstance(item.count, float)
         self.assertIsInstance(item.price, float)
-        self.assertIsInstance(item.description, unicode)
-        self.assertIsInstance(item.unit, unicode)
+        self.assertIsInstance(item.description, str)
+        self.assertIsInstance(item.unit, str)
         self.assertIsInstance(item.tax, float)
 
     def test_getters_and_setters(self):
@@ -90,8 +90,8 @@ class ItemTest(unittest.TestCase):
 
         self.assertIsInstance(item.count, float)
         self.assertIsInstance(item.price, float)
-        self.assertIsInstance(item.description, unicode)
-        self.assertIsInstance(item.unit, unicode)
+        self.assertIsInstance(item.description, str)
+        self.assertIsInstance(item.unit, str)
         self.assertIsInstance(item.tax, float)
 
     def test_count_total(self):

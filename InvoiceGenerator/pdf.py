@@ -11,7 +11,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.platypus.tables import Table, TableStyle
 
 from InvoiceGenerator.conf import _, FONT_PATH, FONT_BOLD_PATH
-from api import Invoice, QrCodeBuilder
+from .api import Invoice, QrCodeBuilder
 import locale
 import warnings
 
@@ -72,13 +72,13 @@ def prepare_invoice_draw(self):
 #Fix for http://bugs.python.org/issue15276.
 def fix_grouping(bytestring):
     try:
-        return unicode(bytestring)
+        return str(bytestring)
     except UnicodeDecodeError:
         return bytestring.decode("utf-8")
 
 
 def currency(amount):
-    return fix_grouping(locale.currency(amount, grouping=True)).replace(u",00 Kč", u",- Kč   ")
+    return fix_grouping(locale.currency(amount, grouping=True)).replace(",00 Kč", ",- Kč   ")
 
 
 class SimpleInvoice(BaseInvoice):
@@ -126,7 +126,7 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.drawString(self.LEFT*mm, self.TOP*mm, self.invoice.title)
         self.pdf.drawString((self.LEFT + 90) * mm,
             self.TOP*mm,
-            _(u'Invoice num.: %s') %
+            _('Invoice num.: %s') %
             self.invoice.number)
 
     def drawMain(self):
@@ -151,7 +151,7 @@ class SimpleInvoice(BaseInvoice):
 
     def drawClient(self,TOP,LEFT):
         self.pdf.setFont('DejaVu', 12)
-        self.pdf.drawString(LEFT * mm, TOP * mm, _(u'Customer'))
+        self.pdf.drawString(LEFT * mm, TOP * mm, _('Customer'))
         self.pdf.setFont('DejaVu', 8)
 
         text = self.pdf.beginText((LEFT + 2) * mm, (TOP - 6) * mm)
@@ -171,7 +171,7 @@ class SimpleInvoice(BaseInvoice):
 
     def drawProvider(self,TOP,LEFT):
         self.pdf.setFont('DejaVu', 12)
-        self.pdf.drawString(LEFT * mm, TOP * mm, _(u'Provider'))
+        self.pdf.drawString(LEFT * mm, TOP * mm, _('Provider'))
         self.pdf.setFont('DejaVu', 8)
 
         text = self.pdf.beginText((LEFT + 2) * mm, (TOP - 6) * mm)
@@ -196,19 +196,19 @@ class SimpleInvoice(BaseInvoice):
 
     def drawPayment(self,TOP,LEFT):
         self.pdf.setFont('DejaVu-Bold', 9)
-        self.pdf.drawString(LEFT * mm, TOP * mm, _(u'Payment information'))
+        self.pdf.drawString(LEFT * mm, TOP * mm, _('Payment information'))
 
         text = self.pdf.beginText((LEFT + 2) * mm, (TOP - 6) * mm)
         lines = [
             self.invoice.provider.bank_name,
-            '%s: %s' % (_(u'Account n.'), self.invoice.provider.bank_account),
+            '%s: %s' % (_('Account n.'), self.invoice.provider.bank_account),
         ]
         if self.invoice.variable_symbol:
             lines.append(
-                '%s: %s' % (_(u'Variable symbol'), self.invoice.variable_symbol))
+                '%s: %s' % (_('Variable symbol'), self.invoice.variable_symbol))
         if self.invoice.specific_symbol:
             lines.append(
-                '%s: %s' % (_(u'Specific symbol'), self.invoice.specific_symbol))
+                '%s: %s' % (_('Specific symbol'), self.invoice.specific_symbol))
         text.textLines(lines)
         self.pdf.drawText(text)
 
@@ -220,30 +220,30 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.drawPath(path, True, True)
 
         self.pdf.setFont('DejaVu-Bold', 7)
-        self.pdf.drawString((LEFT + 1) * mm, (TOP - 2) * mm, _(u'List of items'))
+        self.pdf.drawString((LEFT + 1) * mm, (TOP - 2) * mm, _('List of items'))
 
-        self.pdf.drawString((LEFT + 1) * mm, (TOP - 9) * mm, _(u'Description'))
+        self.pdf.drawString((LEFT + 1) * mm, (TOP - 9) * mm, _('Description'))
         items_are_with_tax = self.invoice.use_tax
         if items_are_with_tax:
             i=9
-            self.pdf.drawString((LEFT + 73) * mm, (TOP - i) * mm, _(u'Units'))
+            self.pdf.drawString((LEFT + 73) * mm, (TOP - i) * mm, _('Units'))
             self.pdf.drawString((LEFT + 88) * mm, (TOP - i) * mm,
-                                _(u'Price per one'))
+                                _('Price per one'))
             self.pdf.drawString((LEFT + 115) * mm, (TOP - i) * mm,
-                                _(u'Total price'))
+                                _('Total price'))
             self.pdf.drawString((LEFT + 137) * mm, (TOP - i) * mm,
-                                _(u'Tax'))
+                                _('Tax'))
             self.pdf.drawString((LEFT + 146) * mm, (TOP - i) * mm,
-                                _(u'Total price with tax'))
+                                _('Total price with tax'))
             i+=5
         else:
             i=9
             self.pdf.drawString((LEFT + 104) * mm, (TOP - i) * mm,
-                                _(u'Units'))
+                                _('Units'))
             self.pdf.drawString((LEFT + 123) * mm, (TOP - i) * mm,
-                                _(u'Price per one'))
+                                _('Price per one'))
             self.pdf.drawString((LEFT + 150) * mm, (TOP - i) * mm,
-                                _(u'Total price'))
+                                _('Total price'))
             i+=5
         return i
 
@@ -288,9 +288,9 @@ class SimpleInvoice(BaseInvoice):
             i -= 4.23
             if items_are_with_tax:
                 if float(int(item.count)) == item.count:
-                    self.pdf.drawRightString((LEFT + 85) * mm, (TOP - i) * mm, u'%s %s' % (fix_grouping(locale.format("%i", item.count, grouping=True)), item.unit))
+                    self.pdf.drawRightString((LEFT + 85) * mm, (TOP - i) * mm, '%s %s' % (fix_grouping(locale.format("%i", item.count, grouping=True)), item.unit))
                 else:
-                    self.pdf.drawRightString((LEFT + 85) * mm, (TOP - i) * mm, u'%s %s' % (fix_grouping(locale.format("%.2f", item.count, grouping=True)), item.unit))
+                    self.pdf.drawRightString((LEFT + 85) * mm, (TOP - i) * mm, '%s %s' % (fix_grouping(locale.format("%.2f", item.count, grouping=True)), item.unit))
                 self.pdf.drawRightString((LEFT + 110) * mm, (TOP - i) * mm, currency(item.price))
                 self.pdf.drawRightString((LEFT + 134) * mm, (TOP - i) * mm, currency(item.total))
                 self.pdf.drawRightString((LEFT + 144) * mm, (TOP - i) * mm, '%.0f %%' % item.tax)
@@ -298,9 +298,9 @@ class SimpleInvoice(BaseInvoice):
                 i+=5
             else:
                 if float(int(item.count)) == item.count:
-                    self.pdf.drawRightString((LEFT + 118) * mm, (TOP - i) * mm, u'%s %s' % (fix_grouping(locale.format("%i", item.count, grouping=True)), item.unit))
+                    self.pdf.drawRightString((LEFT + 118) * mm, (TOP - i) * mm, '%s %s' % (fix_grouping(locale.format("%i", item.count, grouping=True)), item.unit))
                 else:
-                    self.pdf.drawRightString((LEFT + 118) * mm, (TOP - i) * mm, u'%s %s' % (fix_grouping(locale.format("%.2f", item.count, grouping=True)), item.unit))
+                    self.pdf.drawRightString((LEFT + 118) * mm, (TOP - i) * mm, '%s %s' % (fix_grouping(locale.format("%.2f", item.count, grouping=True)), item.unit))
                 self.pdf.drawRightString((LEFT + 148) * mm, (TOP - i) * mm, currency(item.price))
                 self.pdf.drawRightString((LEFT + 173) * mm, (TOP - i) * mm, currency(item.total))
                 i+=5
@@ -319,7 +319,7 @@ class SimpleInvoice(BaseInvoice):
             path.lineTo((LEFT + 176) * mm, (TOP - i) * mm)
             i += 5
             self.pdf.drawPath(path, True, True)
-            self.pdf.drawString((LEFT + 1) * mm, (TOP - i) * mm, _(u'Rounding'))
+            self.pdf.drawString((LEFT + 1) * mm, (TOP - i) * mm, _('Rounding'))
             self.pdf.drawString((LEFT + 68) * mm, (TOP - i) * mm, currency(self.invoice.difference_in_rounding))
             i += 3
 
@@ -330,12 +330,12 @@ class SimpleInvoice(BaseInvoice):
 
         if not items_are_with_tax:
             self.pdf.setFont('DejaVu-Bold', 11)
-            self.pdf.drawString((LEFT + 100) * mm, (TOP - i - 7) * mm, '%s: %s' % (_(u'Total'), currency(self.invoice.price)))
+            self.pdf.drawString((LEFT + 100) * mm, (TOP - i - 7) * mm, '%s: %s' % (_('Total'), currency(self.invoice.price)))
         else:
             self.pdf.setFont('DejaVu-Bold', 6)
-            self.pdf.drawString((LEFT + 1) * mm, (TOP - i - 2) * mm, _(u'Breakdown VAT'))
-            vat_list, tax_list, total_list, total_tax_list = [_(u'VAT rate')], [_(u'Tax')], [_(u'Without VAT')], [_(u'With VAT')]
-            for vat, items in self.invoice.generate_breakdown_vat().iteritems():
+            self.pdf.drawString((LEFT + 1) * mm, (TOP - i - 2) * mm, _('Breakdown VAT'))
+            vat_list, tax_list, total_list, total_tax_list = [_('VAT rate')], [_('Tax')], [_('Without VAT')], [_('With VAT')]
+            for vat, items in self.invoice.generate_breakdown_vat().items():
                 vat_list.append("%s%%" % locale.format('%.2f', vat))
                 tax_list.append(currency(items['tax']))
                 total_list.append(currency(items['total']))
@@ -362,7 +362,7 @@ class SimpleInvoice(BaseInvoice):
 
 
             self.pdf.setFont('DejaVu-Bold', 11)
-            self.pdf.drawString((LEFT + 100) * mm, (TOP - i - 14) * mm, u'%s: %s' % (_(u'Total with tax'), currency(self.invoice.price_tax)))
+            self.pdf.drawString((LEFT + 100) * mm, (TOP - i - 14) * mm, '%s: %s' % (_('Total with tax'), currency(self.invoice.price_tax)))
 
         if items_are_with_tax:
             self.pdf.rect(LEFT * mm, (TOP - i - 17) * mm, (LEFT + 156) * mm, (i + 19) * mm, stroke=True, fill=False) #140,142
@@ -384,7 +384,7 @@ class SimpleInvoice(BaseInvoice):
         path.lineTo((LEFT + 62) * mm, (TOP) * mm - height)
         self.pdf.drawPath(path, True, True)
 
-        self.pdf.drawString((LEFT + 10) * mm, (TOP - 5) * mm - height, '%s: %s' % (_(u'Creator'), self.invoice.creator.name))
+        self.pdf.drawString((LEFT + 10) * mm, (TOP - 5) * mm - height, '%s: %s' % (_('Creator'), self.invoice.creator.name))
 
 
     def drawQR(self, TOP, LEFT, size=130.0):
@@ -401,15 +401,15 @@ class SimpleInvoice(BaseInvoice):
         top = TOP + 1
         items = []
         if self.invoice.date:
-            items.append((LEFT * mm, '%s: %s' % (_(u'Date of exposure taxable invoice'), self.invoice.date)))
+            items.append((LEFT * mm, '%s: %s' % (_('Date of exposure taxable invoice'), self.invoice.date)))
         if self.invoice.payback:
-            items.append((LEFT * mm, '%s: %s' % (_(u'Payback'), self.invoice.payback)))
+            items.append((LEFT * mm, '%s: %s' % (_('Payback'), self.invoice.payback)))
         if self.invoice.taxable_date:
-            items.append((LEFT * mm, '%s: %s' % (_(u'Taxable date'),
+            items.append((LEFT * mm, '%s: %s' % (_('Taxable date'),
                         self.invoice.taxable_date)))
 
         if self.invoice.paytype:
-            items.append((LEFT * mm, '%s: %s' % (_(u'Paytype'),
+            items.append((LEFT * mm, '%s: %s' % (_('Paytype'),
                                                            self.invoice.paytype)))
 
         for item in items:
@@ -442,14 +442,14 @@ class CorrectingInvoice(SimpleInvoice):
         self.pdf.drawString(self.LEFT*mm, self.TOP*mm, self.invoice.title)
         self.pdf.drawString((self.LEFT + 90) * mm,
             self.TOP*mm,
-            _(u'Correcting document: %s') %
+            _('Correcting document: %s') %
             self.invoice.number)
 
 
     def drawCorretion(self,TOP,LEFT):
         self.pdf.setFont('DejaVu', 8)
-        self.pdf.drawString(LEFT * mm, TOP * mm, _(u'Correction document for invoice: %s') % self.invoice.number)
-        self.pdf.drawString(LEFT * mm, (TOP - 4) * mm, _(u'Reason to correction: %s') % self.invoice.reason)
+        self.pdf.drawString(LEFT * mm, TOP * mm, _('Correction document for invoice: %s') % self.invoice.number)
+        self.pdf.drawString(LEFT * mm, (TOP - 4) * mm, _('Reason to correction: %s') % self.invoice.reason)
 
 
 class ProformaInvoice(SimpleInvoice):
@@ -462,12 +462,12 @@ class ProformaInvoice(SimpleInvoice):
         top = TOP + 1
         items = []
         if self.invoice.date:
-            items.append((LEFT * mm, '%s: %s' % (_(u'Date of exposure'), self.invoice.date)))
+            items.append((LEFT * mm, '%s: %s' % (_('Date of exposure'), self.invoice.date)))
         if self.invoice.payback:
-            items.append((LEFT * mm, '%s: %s' % (_(u'Payback'), self.invoice.payback)))
+            items.append((LEFT * mm, '%s: %s' % (_('Payback'), self.invoice.payback)))
 
         if self.invoice.paytype:
-            items.append((LEFT * mm, '%s: %s' % (_(u'Paytype'),
+            items.append((LEFT * mm, '%s: %s' % (_('Paytype'),
                                                  self.invoice.paytype)))
 
         for item in items:

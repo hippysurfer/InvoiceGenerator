@@ -12,7 +12,7 @@ class UnicodeProperty(object):
 
     def __setattr__(self, key, value):
         if key in self._attrs:
-            value = unicode(value)
+            value = str(value)
         self.__dict__[key] = value
 
 class Address(UnicodeProperty):
@@ -41,13 +41,13 @@ class Address(UnicodeProperty):
         address_line = [
             self.summary,
             self.address,
-            u'%s %s' % (self.zip, self.city)
+            '%s %s' % (self.zip, self.city)
             ]
         if self.vat_id:
-            address_line.append(_(u'Vat in: %s') % self.vat_id)
+            address_line.append(_('Vat in: %s') % self.vat_id)
 
         if self.ir:
-            address_line.append(_(u'IR: %s') % self.ir)
+            address_line.append(_('IR: %s') % self.ir)
 
         return address_line
 
@@ -76,8 +76,8 @@ class Item(object):
     def __init__(self, count, price, description='', unit='', tax=0.0):
         self._count = float(count)
         self._price = float(price)
-        self._description = unicode(description)
-        self._unit = unicode(unit)
+        self._description = str(description)
+        self._unit = str(unit)
         self._tax = float(tax)
 
     @property
@@ -97,7 +97,7 @@ class Item(object):
 
     @description.setter
     def description(self, value):
-        self._description = unicode(value)
+        self._description = str(value)
 
     @property
     def count(self):
@@ -127,7 +127,7 @@ class Item(object):
 
     @unit.setter
     def unit(self, value):
-        self._unit = unicode(value)
+        self._unit = str(value)
 
     @property
     def tax(self):
@@ -196,7 +196,7 @@ class Invoice(UnicodeProperty):
     def _get_grouped_items_by_tax(self):
         table = {}
         for item in self.items:
-            if not table.has_key(item.tax):
+            if item.tax not in table:
                 table[item.tax] = {'total': item.total, 'total_tax': item.total_tax, 'tax': item.count_tax()}
             else:
                 table[item.tax]['total'] += item.total
@@ -215,7 +215,7 @@ class Invoice(UnicodeProperty):
 
     def generate_breakdown_vat_table(self):
         rows = []
-        for vat,items in self.generate_breakdown_vat().iteritems():
+        for vat,items in self.generate_breakdown_vat().items():
              rows.append((vat, items['total'], items['total_tax'], items['tax']))
 
         return rows
@@ -255,7 +255,7 @@ class QrCodeBuilder(object):
         except AttributeError:
             pass
 
-        qr_kwargs = {k: v for k, v in qr_kwargs.items() if v}
+        qr_kwargs = {k: v for k, v in list(qr_kwargs.items()) if v}
         
         return QRPlatbaGenerator(**qr_kwargs)
 

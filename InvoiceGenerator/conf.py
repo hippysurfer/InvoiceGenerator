@@ -3,7 +3,7 @@ import os
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(os.path.join(__file__)))
 
-LANGUAGE = 'cs'
+LANGUAGE = 'en'
 
 try:
     import gettext
@@ -11,10 +11,10 @@ try:
     t = gettext.translation('messages', path, languages=[LANGUAGE],
                             codeset='utf8')
 
-    _ = lambda message: t.gettext(message).decode('utf8')
+    _ = lambda message: t.gettext(message)
 except IOError:
     _ = lambda x: x
-    print "Fix this!"
+    print("Fix this!")
 except ImportError:
     _ = lambda x: x
 

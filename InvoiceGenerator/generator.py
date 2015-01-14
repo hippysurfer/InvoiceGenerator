@@ -10,8 +10,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from tempfile import NamedTemporaryFile
 
-from api import Invoice as ApiInvoice
-from pdf import BaseInvoice
+from .api import Invoice as ApiInvoice
+from .pdf import BaseInvoice
 
 class Address:
     firstname = ""
@@ -121,7 +121,7 @@ class Invoice:
         self.pdf.showPage()
         self.pdf.save()
 
-        f = open(self.pdffile.name)
+        f = open(self.pdffile.name, 'rb')
         data = f.read()
         f.close()
 
@@ -303,5 +303,5 @@ if __name__ == "__main__":
     invoice.addItem(item2)
 
     f = open("test.pdf", "w")
-    f.write(invoice.getContent())
+    f.write(bytes(invoice.getContent()))
     f.close()

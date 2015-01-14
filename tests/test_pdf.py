@@ -25,7 +25,7 @@ class TestBaseInvoice(unittest.TestCase):
         provider.email = 'mail@email.com'
         provider.bank_account = '2600420569/2010'
         provider.bank_name = 'RB'
-        provider.note = u'zapsaná v obchodním rejstříku vedeném městským soudem v Praze,\noddíl C, vložka 176551'
+        provider.note = 'zapsaná v obchodním rejstříku vedeném městským soudem v Praze,\noddíl C, vložka 176551'
 
         client = Client('Kkkk')
         client.summary = 'Bla blah blah'
@@ -36,25 +36,25 @@ class TestBaseInvoice(unittest.TestCase):
         client.ir = '785684523'
         client.phone = '785684523'
         client.email = 'mail@email.com'
-        client.note = u'zapsaná v obchodním rejstříku vedeném městským soudem v Praze,\noddíl C, vložka 176551'
+        client.note = 'zapsaná v obchodním rejstříku vedeném městským soudem v Praze,\noddíl C, vložka 176551'
 
         invoice = Invoice(client, provider, Creator('blah'))
-        invoice.title = u"Testovací faktura"
-        invoice.add_item(Item(32, 600.6, description=u"Krátký popis", tax=50))
+        invoice.title = "Testovací faktura"
+        invoice.add_item(Item(32, 600.6, description="Krátký popis", tax=50))
         invoice.add_item(Item(32, 2.5, tax=20))
         invoice.add_item(Item(5, 25.42,
-                              description=u"Dlouhý popis blah blah blah blah blah blah blah blah blah blah blah "
-                                          u"blah blah blah blah blah blah blah blah blah blah blah blah blah blah "
-                                          u"blah blah blah blah blah blah blah blah blah blah blah",
+                              description="Dlouhý popis blah blah blah blah blah blah blah blah blah blah blah "
+                                          "blah blah blah blah blah blah blah blah blah blah blah blah blah blah "
+                                          "blah blah blah blah blah blah blah blah blah blah blah",
                               tax=20))
         for i in range(1, 26):
-            invoice.add_item(Item(5, 25.42, description=u"Popis", tax=0))
+            invoice.add_item(Item(5, 25.42, description="Popis", tax=0))
         invoice.specific_symbol = 666
         invoice.taxable_date = datetime.date.today()
         invoice.variable_symbol = '000000001'
         invoice.number = 'F20140001'
         invoice.payback = datetime.date.today()
-        invoice.currency = u'Kč'
+        invoice.currency = 'Kč'
         invoice.currency_locale = 'cs_CZ.UTF-8'
         invoice.rounding_result = True
 
@@ -63,7 +63,7 @@ class TestBaseInvoice(unittest.TestCase):
         pdf.gen(tmp_file.name, True)
 
         invoice.number = 1
-        invoice.reason = u"Položka navíc"
+        invoice.reason = "Položka navíc"
         tmp_file1 = NamedTemporaryFile(delete=False)
         pdf = CorrectingInvoice(invoice)
         pdf.gen(tmp_file1.name)
@@ -78,7 +78,7 @@ class TestBaseInvoice(unittest.TestCase):
         provider.email = 'mail@email.com'
         provider.bank_account = '2600420569/2010'
         provider.bank_name = 'RB'
-        provider.note = u'zapsaná v obchodním rejstříku vedeném městským soudem v Praze,\noddíl C, vložka 176551'
+        provider.note = 'zapsaná v obchodním rejstříku vedeném městským soudem v Praze,\noddíl C, vložka 176551'
 
         client = Client('Kkkk')
         client.summary = 'Bla blah blah'
@@ -89,26 +89,26 @@ class TestBaseInvoice(unittest.TestCase):
         client.ir = '785684523'
         client.phone = '785684523'
         client.email = 'mail@email.com'
-        client.note = u'zapsaná v obchodním rejstříku vedeném městským soudem v Praze,\noddíl C, vložka 176551'
+        client.note = 'zapsaná v obchodním rejstříku vedeném městským soudem v Praze,\noddíl C, vložka 176551'
 
         invoice = Invoice(client, provider, Creator('blah'))
         invoice.number = 'F20140007'
-        invoice.title = u"Proforma faktura"
-        invoice.add_item(Item(32, 600.6, description=u"Krátký popis", tax=50))
+        invoice.title = "Proforma faktura"
+        invoice.add_item(Item(32, 600.6, description="Krátký popis", tax=50))
         invoice.add_item(Item(32, 2.5, tax=20))
         invoice.add_item(Item(5, 25.42,
-                              description=u"Dlouhý popis blah blah blah blah blah blah blah blah blah blah blah "
-                                          u"blah blah blah blah blah blah blah blah blah blah blah blah blah blah "
-                                          u"blah blah blah blah blah blah blah blah blah blah blah",
+                              description="Dlouhý popis blah blah blah blah blah blah blah blah blah blah blah "
+                                          "blah blah blah blah blah blah blah blah blah blah blah blah blah blah "
+                                          "blah blah blah blah blah blah blah blah blah blah blah",
                               tax=20))
         for i in range(1, 26):
-            invoice.add_item(Item(5, 25.42, description=u"Popis", tax=0))
+            invoice.add_item(Item(5, 25.42, description="Popis", tax=0))
         invoice.specific_symbol = 666
         invoice.date = datetime.date.today()
         invoice.variable_symbol = '000000001'
         invoice.number = 'F20140001'
         invoice.payback = datetime.date.today()
-        invoice.currency = u'Kč'
+        invoice.currency = 'Kč'
         invoice.currency_locale = 'cs_CZ.UTF-8'
         invoice.rounding_result = True
 
