@@ -70,6 +70,8 @@ class Invoice:
         self.pdf = Canvas(self.pdffile.name, pagesize = letter)
         self.pdf.setFont("DejaVu", 15)
         self.pdf.setStrokeColorRGB(0, 0, 0)
+        
+        self.items = []
 
     def __del__(self):
         if os.path.isfile(self.pdffile.name):
