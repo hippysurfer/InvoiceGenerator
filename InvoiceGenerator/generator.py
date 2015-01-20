@@ -281,7 +281,7 @@ Payment Reference: %s"""%(self.provider.bank_name ,self.provider.bank_account, s
 
         self.pdf.setFont("DejaVu", 10)
         self.pdf.drawString((LEFT)*mm, (TOP+1)*mm, "Invoice Date: %s" % today.strftime("%d.%m.%Y"))
-        self.pdf.drawString((LEFT)*mm, (TOP-4)*mm, "Payment Date: %s" % payback.strftime("%d.%m.%Y"))
+        self.pdf.drawString((LEFT)*mm, (TOP-4)*mm, "Due Date: %s" % payback.strftime("%d.%m.%Y"))
         self.pdf.drawString((LEFT)*mm, (TOP-9)*mm, "Payment Method: " + self.paytype)
 
 class Generator(object):
