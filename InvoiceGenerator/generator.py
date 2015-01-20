@@ -4,11 +4,12 @@
 import os, datetime
 from reportlab.pdfgen.canvas import Canvas
 
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm, mm, inch, pica
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from tempfile import NamedTemporaryFile
+from textwrap import wrap
 
 from .api import Invoice as ApiInvoice
 from .pdf import BaseInvoice
@@ -29,7 +30,9 @@ class Address:
         return [
             "%s %s" % (self.firstname, self.lastname),
             self.address,
-            "%s %s" % (self.zip, self.city),
+            "%s %s" % (self.city, self.zip),
+            self.phone,
+            self.email
         ]
 
     def getContactLines(self):
@@ -46,10 +49,18 @@ class Item:
     def total(self):
         return self.count*self.price
 
+
+class Remittance:
+    reference = ""
+    message = ""
+    total = ""
+
+
 class Invoice:
     client = Address()
     provider = Address()
     items = []
+    remittance = Remittance()
     title = "Faktura"
     vs = "00000000"
     creator = ""
@@ -67,7 +78,7 @@ class Invoice:
 
         self.pdffile = NamedTemporaryFile(delete=False)
 
-        self.pdf = Canvas(self.pdffile.name, pagesize = letter)
+        self.pdf = Canvas(self.pdffile.name, pagesize = A4)
         self.pdf.setFont("DejaVu", 15)
         self.pdf.setStrokeColorRGB(0, 0, 0)
         
@@ -102,6 +113,9 @@ class Invoice:
     def setPaymentDays(self, value):
         self.payment_days = int(value)
 
+    def setRemittance(self, remittance):
+        self.remittance = remittance
+
     def addItem(self, item):
         self.items.append(item)
 
@@ -116,6 +130,7 @@ class Invoice:
         self.drawClient(self.TOP-30,self.LEFT+91)
         self.drawPayment(self.TOP-47,self.LEFT+3)
         self.drawItems(self.TOP-80,self.LEFT)
+        self.drawRemittance(self.TOP-160,self.LEFT)
         self.drawDates(self.TOP-10,self.LEFT+91)
 
         #self.pdf.setFillColorRGB(0, 0, 0)
@@ -138,6 +153,7 @@ class Invoice:
     def drawMain(self):
         # Horní lajna
         self.pdf.drawString(self.LEFT*mm, self.TOP*mm, self.title)
+        self.pdf.setFont("DejaVu", 8)
         self.pdf.drawString((self.LEFT+100)*mm, self.TOP*mm, "Booking Reference: %s" % self.vs)
 
         # Rámečky
@@ -165,9 +181,9 @@ class Invoice:
         text = self.pdf.beginText((LEFT+2)*mm, (TOP-6)*mm)
         text.textLines("\n".join(self.client.getAddressLines()))
         self.pdf.drawText(text)
-        text = self.pdf.beginText((LEFT+2)*mm, (TOP-28)*mm)
-        text.textLines("\n".join(self.client.getContactLines()))
-        self.pdf.drawText(text)
+        #text = self.pdf.beginText((LEFT+2)*mm, (TOP-30)*mm)
+        #text.textLines("\n".join(self.client.getContactLines()))
+        #self.pdf.drawText(text)
 
     def drawProvider(self,TOP,LEFT):
         self.pdf.setFont("DejaVu", 12)
@@ -176,19 +192,20 @@ class Invoice:
         text = self.pdf.beginText((LEFT+2)*mm, (TOP-6)*mm)
         text.textLines("\n".join(self.provider.getAddressLines()))
         self.pdf.drawText(text)
-        text = self.pdf.beginText((LEFT+40)*mm, (TOP-6)*mm)
-        text.textLines("\n".join(self.provider.getContactLines()))
-        self.pdf.drawText(text)
+        #text = self.pdf.beginText((LEFT+2)*mm, (TOP-18)*mm)
+        #text.textLines("\n".join(self.provider.getContactLines()))
+        #self.pdf.drawText(text)
         if self.provider.note:
             self.pdf.drawString((LEFT+2)*mm, (TOP-26)*mm, self.provider.note)
 
     def drawPayment(self,TOP,LEFT):
-        self.pdf.setFont("DejaVu", 11)
+        self.pdf.setFont("DejaVu", 12)
         self.pdf.drawString((LEFT)*mm, (TOP)*mm, "Payment Details")
+        self.pdf.setFont("DejaVu", 8)
         #self.pdf.setFillColorRGB(255, 0, 0)
         text = self.pdf.beginText((LEFT+2)*mm, (TOP-6)*mm)
         text.textLines("""%s
-Account Number: %s
+ %s
 Payment Reference: %s"""%(self.provider.bank_name ,self.provider.bank_account, self.vs))
         self.pdf.drawText(text)
 
@@ -210,13 +227,13 @@ Payment Reference: %s"""%(self.provider.bank_name ,self.provider.bank_account, s
 
         # List
         total=0.0
+        i+=5
         for x in self.items:
             self.pdf.drawString((LEFT+1)*mm, (TOP-i)*mm, x.name)
-            i+=5
             self.pdf.drawString((LEFT+100)*mm, (TOP-i)*mm, "%d" % x.count)
             self.pdf.drawString((LEFT+122)*mm, (TOP-i)*mm, "%.2f" % x.price)
             self.pdf.drawString((LEFT+150)*mm, (TOP-i)*mm, "%.2f" % (x.total()))
-            i+=5
+            i+=10
             total += x.total()
 
         path = self.pdf.beginPath()
@@ -232,12 +249,30 @@ Payment Reference: %s"""%(self.provider.bank_name ,self.provider.bank_account, s
         if self.sign_image:
             self.pdf.drawImage(self.sign_image, (LEFT+98)*mm, (TOP-i-72)*mm)
 
+    def drawRemittance(self,TOP,LEFT):
+        line_h = 12 # Size of line in mm
         path = self.pdf.beginPath()
-        path.moveTo((LEFT+110)*mm, (TOP-i-70)*mm)
-        path.lineTo((LEFT+164)*mm, (TOP-i-70)*mm)
+        path.moveTo((LEFT)*mm, (TOP-2)*mm)
+        path.lineTo((LEFT+176)*mm, (TOP-2)*mm)
         self.pdf.drawPath(path, True, True)
 
-        self.pdf.drawString((LEFT+112)*mm, (TOP-i-75)*mm, "Generated By: %s" % self.creator)
+        self.pdf.setFont("DejaVu", line_h-2)
+        self.pdf.drawString((LEFT+1)*mm, (TOP-(1*line_h))*mm, "Remittance Slip:")
+
+        self.pdf.drawString((LEFT+100)*mm, (TOP-(1*line_h))*mm,
+                            "Booking Reference: %s" % self.remittance.reference)
+
+        lines = self.remittance.message.split('\n')
+        base = (TOP-(2*line_h))*mm
+        for (line, offset) in zip(lines, range(1, line_h*len(lines), line_h)):
+
+            self.pdf.drawString((LEFT+1)*mm, base-offset, line)
+            new_base = base-offset
+ 
+        self.pdf.setFont("DejaVu", 12)
+        self.pdf.drawString((LEFT+130)*mm, (new_base-(1*line_h)),
+                            "Total: %.2f" % self.remittance.total)
+
 
 
     def drawDates(self,TOP,LEFT):
