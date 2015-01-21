@@ -1,3 +1,16 @@
+==========
+Fork Notes
+==========
+
+This is my personal fork of this library. It is tailored to the specifc needs of my
+project. 
+
+
+If you are looking to make use of the InvoiceGenerator you are probably better off
+forking from the original rather than using this as your stating point. 
+
+Below this line is the orginal README.
+
 ================
 InvoiceGenerator
 ================
